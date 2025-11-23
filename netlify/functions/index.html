@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 AI Script Generator</title>
+</head>
+<body>
+  <h1>🎬 AI Script Generator</h1>
+  <p>Generate Hinglish YouTube Scripts for your topics!</p>
+
+  <form id="scriptForm">
+    <input type="text" id="topic" name="topic" placeholder="Enter your topic..." required>
+    <button type="submit">Generate Script</button>
+  </form>
+
+  <div id="loading" style="display:none;">⚙️ Generating your script...</div>
+  <pre id="output"></pre>
+
+  <script>
+    const form = document.getElementById("scriptForm");
+    const outputDiv = document.getElementById("output");
+    const loadingDiv = document.getElementById("loading");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const topic = document.getElementById("topic").value.trim();
+      if (!topic) return;
+
+      outputDiv.textContent = "";
+      loadingDiv.style.display = "block";
+
+      try {
+        const response = await fetch("/.netlify/functions/generate", {
+          method: "POST",
+          body: JSON.stringify({ topic }),
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await response.json();
+        loadingDiv.style.display = "none";
+
+        if (data.script) {
+          typeEffect(data.script);
+        } else {
+          outputDiv.textContent = "❌ Error: " + data.error;
+        }
+      } catch (err) {
+        loadingDiv.style.display = "none";
+        outputDiv.textContent = "❌ Request failed: " + err.message;
+      }
+    });
+
+    // Typing effect
+    function typeEffect(text) {
+      let index = 0;
+      outputDiv.textContent = "";
+      const interval = setInterval(() => {
+        if (index < text.length) {
+          outputDiv.textContent += text.charAt(index);
+          index++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 20);
+    }
+  </script>
+</body>
+</html>
